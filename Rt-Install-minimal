@@ -10,7 +10,7 @@ HTTP_PORT=${4:-80}
 function CHECK_ROOT {
     if [ "$EUID" -ne 0 ]; then
         echo "Please run as root"
-        exit
+        exit 1
     fi
 }
 
@@ -32,33 +32,29 @@ function DETECT_OS {
     esac
 
     OS_VERSION=${VERSION_ID//./}
-    OS_FINAL_NAME="${OS_NAME}${OS_VERSION}"
-    echo "Detected OS: $OS_FINAL_NAME"
+    echo "Detected OS: $OS_NAME$OS_VERSION"
 }
 
 # Function for installing dependencies based on OS version
 function INSTALL_DEPENDENCIES {
-    case "$OS_FINAL_NAME" in
-        # Group 1: Older OS versions
-        deb10buster|ubu1804|ubu1810|ubu1904|ubu1910)
-            echo "Installing dependencies for older OS versions: $OS_FINAL_NAME"
-            apt-get update
-            apt-get install -y tmux rtorrent apache2 libapache2-mod-scgi openssl
-            ;;
+    echo "Installing dependencies for $OS_NAME$OS_VERSION..."
 
-        # Group 2: Newer OS versions
-        deb11bullseye|deb12bookworm|ubu2004|ubu2010|ubu2104|ubu2110)
-            echo "Installing dependencies for newer OS versions: $OS_FINAL_NAME"
-            apt-get update
-            apt-get install -y tmux rtorrent apache2 libapache2-mod-scgi openssl
-            ;;
-
-        # Unsupported OS versions
-        *)
-            echo "Unsupported OS version: $OS_FINAL_NAME. Exiting."
-            exit 1
-            ;;
-    esac
+    # Debian 10 or Ubuntu 18.04, 18.10, 19.04, 19.10
+    if [[ ($OS_NAME == "debian" && $OS_VERSION -eq 10) ||
+          ($OS_NAME == "ubuntu" && ($OS_VERSION -eq 1804 || $OS_VERSION -eq 1810 ||
+          $OS_VERSION -eq 1904 || $OS_VERSION -eq 1910)) ]]; then
+        apt-get update
+        apt-get install -y tmux rtorrent apache2 libapache2-mod-scgi openssl systemd
+    # Debian 11, 12 or Ubuntu 20.04, 20.10, 21.04, 21.10
+    elif [[ ($OS_NAME == "debian" && ($OS_VERSION -eq 11 || $OS_VERSION -eq 12)) ||
+            ($OS_NAME == "ubuntu" && ($OS_VERSION -eq 2004 || $OS_VERSION -eq 2010 ||
+            $OS_VERSION -eq 2104 || $OS_VERSION -eq 2110)) ]]; then
+        apt-get update
+        apt-get install -y tmux rtorrent apache2 libapache2-mod-scgi openssl systemd
+    else
+        echo "Unsupported OS version: $OS_NAME$OS_VERSION. Exiting."
+        exit 1
+    fi
 }
 
 # Function to configure Apache
