@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: 
+        os:
           - debian:bookworm
           - debian:bullseye
           - debian:buster
@@ -54,5 +54,5 @@ jobs:
       - name: Run Installation Script on ${{ matrix.os }}
         run: |
           docker run -v ${{ github.workspace }}:/workspace -w /workspace ${{ matrix.os }} \
-          bash Rt-Install-minimal ${{ matrix.os }}
+          bash Rt-Install-minimal test test testing 8080 ${{ matrix.os }}
 
