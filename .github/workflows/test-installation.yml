@@ -1,0 +1,58 @@
+name: Test Installation on Multiple Systems
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: 
+          - debian:bookworm
+          - debian:bullseye
+          - debian:buster
+          - raspbian:buster
+          - ubuntu:24.04
+          - ubuntu:23.10
+          - ubuntu:23.04
+          - ubuntu:22.04
+          - ubuntu:21.10
+          - ubuntu:21.04
+          - ubuntu:20.10
+          - ubuntu:20.04
+          - ubuntu:19.10
+          - ubuntu:19.04
+          - ubuntu:18.10
+          - ubuntu:18.04
+          - linuxmintd/mint21-amd64
+          - linuxmintd/mint20.3-amd64
+          - linuxmintd/mint20.2-amd64
+          - linuxmintd/mint20.1-amd64
+          - linuxmintd/mint20-amd64
+          - linuxmintd/mint19.3-amd64
+          - linuxmintd/mint19.2-amd64
+          - linuxmintd/mint19.1-amd64
+          - linuxmintd/mint19-amd64
+          - lmde5-amd64
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Pull Docker image for ${{ matrix.os }}
+        run: |
+          docker pull ${{ matrix.os }}
+
+      - name: Run Installation Script on ${{ matrix.os }}
+        run: |
+          docker run -v ${{ github.workspace }}:/workspace -w /workspace ${{ matrix.os }} \
+          bash Rt-Install-minimal ${{ matrix.os }}
+
