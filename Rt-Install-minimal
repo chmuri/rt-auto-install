@@ -14,16 +14,16 @@ function CHECK_ROOT {
     fi
 }
 
-# Function for detecting the OS
+# Function for detecting the OS and version
 function DETECT_OS {
     source /etc/os-release
 
     case $ID in
         ubuntu)
-            OS_FINAL_NAME="ubu${VERSION_ID//./}"
+            OS_NAME="ubuntu"
             ;;
         debian)
-            OS_FINAL_NAME="deb${VERSION_ID//./}"
+            OS_NAME="debian"
             ;;
         *)
             echo "Unsupported OS: $ID"
@@ -31,25 +31,21 @@ function DETECT_OS {
             ;;
     esac
 
-    echo "Detected OS: $OS_FINAL_NAME"
+    OS_VERSION=${VERSION_ID//./}
+
+    echo "Detected OS: $OS_NAME$OS_VERSION"
 }
 
 # Function for installing dependencies
 function INSTALL_DEPENDENCIES {
-    case $OS_FINAL_NAME in
-        deb10buster|ubu1804|ubu1810|ubu1904|ubu1910)
-            apt-get update
-            apt-get install -y tmux rtorrent apache2 libapache2-mod-scgi openssl
-            ;;
-        deb11bullseye|deb12bookworm|ubu2004|ubu2010|ubu2104|ubu2110)
-            apt-get update
-            apt-get install -y tmux rtorrent apache2 libapache2-mod-scgi openssl
-            ;;
-        *)
-            echo "Unsupported OS version: $OS_FINAL_NAME. Exiting."
-            exit 1
-            ;;
-    esac
+    if [[ $OS_NAME == "debian" || $OS_NAME == "ubuntu" ]]; then
+        echo "Installing dependencies for $OS_NAME"
+        apt-get update
+        apt-get install -y tmux rtorrent apache2 libapache2-mod-scgi openssl
+    else
+        echo "Unsupported OS version: $OS_NAME$OS_VERSION. Exiting."
+        exit 1
+    fi
 }
 
 # Function to configure Apache
