@@ -32,20 +32,33 @@ function DETECT_OS {
     esac
 
     OS_VERSION=${VERSION_ID//./}
-
-    echo "Detected OS: $OS_NAME$OS_VERSION"
+    OS_FINAL_NAME="${OS_NAME}${OS_VERSION}"
+    echo "Detected OS: $OS_FINAL_NAME"
 }
 
-# Function for installing dependencies
+# Function for installing dependencies based on OS version
 function INSTALL_DEPENDENCIES {
-    if [[ $OS_NAME == "debian" || $OS_NAME == "ubuntu" ]]; then
-        echo "Installing dependencies for $OS_NAME"
-        apt-get update
-        apt-get install -y tmux rtorrent apache2 libapache2-mod-scgi openssl
-    else
-        echo "Unsupported OS version: $OS_NAME$OS_VERSION. Exiting."
-        exit 1
-    fi
+    case "$OS_FINAL_NAME" in
+        # Group 1: Older OS versions
+        deb10buster|ubu1804|ubu1810|ubu1904|ubu1910)
+            echo "Installing dependencies for older OS versions: $OS_FINAL_NAME"
+            apt-get update
+            apt-get install -y tmux rtorrent apache2 libapache2-mod-scgi openssl
+            ;;
+
+        # Group 2: Newer OS versions
+        deb11bullseye|deb12bookworm|ubu2004|ubu2010|ubu2104|ubu2110)
+            echo "Installing dependencies for newer OS versions: $OS_FINAL_NAME"
+            apt-get update
+            apt-get install -y tmux rtorrent apache2 libapache2-mod-scgi openssl
+            ;;
+
+        # Unsupported OS versions
+        *)
+            echo "Unsupported OS version: $OS_FINAL_NAME. Exiting."
+            exit 1
+            ;;
+    esac
 }
 
 # Function to configure Apache
