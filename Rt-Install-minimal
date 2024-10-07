@@ -17,7 +17,20 @@ function CHECK_ROOT {
 # Function for detecting the OS
 function DETECT_OS {
     source /etc/os-release
-    OS_FINAL_NAME=$(echo "$ID$VERSION_ID" | tr -d '.')
+
+    case $ID in
+        ubuntu)
+            OS_FINAL_NAME="ubu${VERSION_ID//./}"
+            ;;
+        debian)
+            OS_FINAL_NAME="deb${VERSION_ID//./}"
+            ;;
+        *)
+            echo "Unsupported OS: $ID"
+            exit 1
+            ;;
+    esac
+
     echo "Detected OS: $OS_FINAL_NAME"
 }
 
@@ -33,7 +46,7 @@ function INSTALL_DEPENDENCIES {
             apt-get install -y tmux rtorrent apache2 libapache2-mod-scgi openssl
             ;;
         *)
-            echo "Unsupported OS. Exiting."
+            echo "Unsupported OS version: $OS_FINAL_NAME. Exiting."
             exit 1
             ;;
     esac
